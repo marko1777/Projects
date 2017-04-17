@@ -14,11 +14,21 @@ enum Color{
 class GraphVertex
 {
 public:
-//friend GraphDiameter;
+  //friend GraphDiameter;
+  // trick: http://en.cppreference.com/w/cpp/language/class
+  // just above "Member specification"
+  //
+  // Note: Im not sure whats going on, but im pretty convinced that
+  //   it is related someway to name lookup and thats why it ccould not find the typedef
+  //   and yea, "friend class" forward decls a type as you know
+  //   You can check this, making a pointer to the forward declared type
+  //   and the compiler will happily allow it for you, becouse it doesnt have to know the
+  //   whole definition for a pointer, and recognizes the name as a type.
+  //   As a last note, i repeate that i dont really know whats going on, but happens on gcc and clang too
   friend class GraphDiameter;
   GraphVertex(Color vC = WHITE,int d = 0) : vertexColor(vC), distance(d){}
-  friend std::istream& operator>>(std::istream &in, GraphDiameter &g);
-  friend std::ostream& operator<<(std::ostream &out,const GraphDiameter &g);
+  friend std::istream& operator>>(std::istream &in, class GraphDiameter &g);
+  friend std::ostream& operator<<(std::ostream &out,const class GraphDiameter &g);
 private:
   Color vertexColor;
   int distance;
@@ -46,10 +56,9 @@ std::istream& operator>>(std::istream &in, GraphDiameter &g)
     int vertexDb;
     in >> vertexDb;
     g.graphVertexVec.resize(vertexDb + 1);
-    int u;
-    int v;
+    int u, v;
     in >> u;
-    while(u != 0)
+    while(u)
     {
       in >> v;
       g.graphVertexVec[u].adjAr.push_back(v);
@@ -61,10 +70,10 @@ std::istream& operator>>(std::istream &in, GraphDiameter &g)
 }
 std::ostream& operator<<(std::ostream &out,const GraphDiameter &g)
 {
-  for(int i = 1; i < g.graphVertexVec.size(); i++)
+  for(auto i = 1u; i < g.graphVertexVec.size(); i++)
   {
     out << i << ".vertex adjacments: ";
-    for(int j = 0; j < g.graphVertexVec[i].adjAr.size(); j++)
+    for(auto j = 0u; j < g.graphVertexVec[i].adjAr.size(); j++)
     {
       out << g.graphVertexVec[i].adjAr[j] << " "; 
     }
@@ -76,7 +85,7 @@ int GraphDiameter::calculateDiameter()
 {
   int firstVertex = 1;
   calculateDistanceAndPushToMaxDistanceVec(firstVertex);
-  if(maxDistanceVec.size() >= 2)
+  if(maxDistanceVec.size() >= 2u)
   {
     std::sort(maxDistanceVec.begin(),maxDistanceVec.end(), std::greater<int>());
     return maxDistance = firstTwoElementSumFromMaxDistanceVec();
@@ -88,7 +97,7 @@ void GraphDiameter::calculateDistanceAndPushToMaxDistanceVec(int firstVertex)
 {
   maxDistance = 0;
   graphVertexVec[firstVertex].vertexColor = GRAY;
-  for(int i = 0; i < graphVertexVec[firstVertex].adjAr.size(); i++)
+  for(auto i = 0u; i < graphVertexVec[firstVertex].adjAr.size(); i++)
   {
     int mainDepth = 0;
     int actAdj = graphVertexVec[firstVertex].adjAr[i];
@@ -101,7 +110,7 @@ void GraphDiameter::calculateDistance(int examinedAdj, int &vertexDepth)
 {
   graphVertexVec[examinedAdj].distance = ++vertexDepth;
   graphVertexVec[examinedAdj].vertexColor = GRAY;
-  for(int i = 0; i < graphVertexVec[examinedAdj].adjAr.size(); i++)
+  for(auto i = 0u; i < graphVertexVec[examinedAdj].adjAr.size(); i++)
   {
     int actAdj = graphVertexVec[examinedAdj].adjAr[i];
     if(graphVertexVec[actAdj].vertexColor == WHITE)
