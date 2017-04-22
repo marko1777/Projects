@@ -85,7 +85,7 @@ std::ostream& operator<<(std::ostream &out,const GraphDiameter &gD)
   return out;
 }
 
-std::ostream& operator<<(std::ostream &out, const GraphDiameter::GraphVertex &gV)
+std::ostream& operator<<(std::ostream &out, const GraphVertex &gV)
 {
   for(auto i = 0u; i < gV.vertexAdjacentVec.size(); ++i)
   {
