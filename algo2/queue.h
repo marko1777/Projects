@@ -1,61 +1,47 @@
 #ifndef Queue_H
 #define Queue_H
 
-#include <iosfwd>
-
 namespace MyQueue
-{
+{	
+	typedef unsigned size_t;
     class Queue{
     public:
         struct List
         {
             int value;
             List *next;
-            List(int v = 0,List *p = NULL): value(v),next(p) {}
+            List(int v = 0,List *p = nullptr): value(v),next(p) {}
         };
 
         enum Exceptions{EMPTY_LIST};
 
-        Queue()
-        {
-            size = 0; 
-            elements = new List();
-            begin = elements;
-        }
+        Queue() : end(new List()), begin(end), size(0){}
 
-        Queue(int value)
-        {
-            elements = new List(); //head
-            begin = elements;
-            elements = elements -> next = new List(value);
-            size = 1;
-        }
+        Queue(int value) : end(new List(value)), begin(new List(0, end)), size(1){}
 
         Queue(const Queue &o)
         {
             size = o.size;
             List *lhsP = begin;
             List *rhsP = o.begin -> next;
-            while(rhsP != NULL)
+            while(rhsP != nullptr)
             {
                 lhsP -> next = new List(rhsP -> value);
                 lhsP = lhsP -> next;
                 rhsP = rhsP -> next;
             }
-            elements = rhsP;
+            end = rhsP;
         }
 
         ~Queue()
         {
-            if(!isEmpty())
+            if(isEmpty()) return;
+            List *tempPointer = begin;
+            while(tempPointer != nullptr)
             {
-                List *tempPointer = begin;
-                while(tempPointer != NULL)
-                {
-                    tempPointer = begin;
-                    begin = begin -> next;
-                    delete tempPointer;
-                }
+                tempPointer = begin;
+                begin = begin -> next;
+                delete tempPointer;
             }
         }
 
@@ -63,8 +49,8 @@ namespace MyQueue
         {
             if(isEmpty()) throw EMPTY_LIST;
             List *tempPointer = begin -> next;
+            begin -> next = tempPointer -> next;
             int returnValue = tempPointer -> value; 
-            begin ->next = tempPointer -> next;
             delete tempPointer;
             size--;
 
@@ -76,23 +62,21 @@ namespace MyQueue
             if(isEmpty())
             {
                 ++size;
-                elements = new List(pushValue);
-                begin ->next = elements;
+                begin ->next = end = new List(pushValue);
             }else{
                 ++size;
-                elements -> next = new List(pushValue);
-                elements = elements-> next;
+                end = end-> next = new List(pushValue);
             }
         }
 
-        bool isEmpty(){ return size == 0; }
+        bool isEmpty() const { return size == 0; }
 
-        int getSize(){ return size; }    
+        size_t getsize() const { return size; }
         
     private:
-        List *elements;
+        List *end;
         List *begin;
-        int size;
+        size_t size;
     };
 }
 #endif // Queue_H
