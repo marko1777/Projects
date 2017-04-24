@@ -3,7 +3,8 @@
 
 namespace MyQueue
 {	
-	typedef unsigned size_t;
+	using  size_t = unsigned;
+    
     class Queue{
     public:
         struct List

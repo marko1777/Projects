@@ -1,7 +1,6 @@
 #include <iostream>
 #include <vector>
-#include <stdlib.h>
-#include <time.h>
+#include <random>
 #include "GraphDiameter.h"
 
 std::istream& operator>>(std::istream &in, GraphDiameter &gD)
@@ -15,8 +14,8 @@ std::istream& operator>>(std::istream &in, GraphDiameter &gD)
     while(u != 0)
     {
       in >> v;
-      gD.graphVertexVec[u].vertexAdjacentVec.push_back(v);
-      gD.graphVertexVec[v].vertexAdjacentVec.push_back(u);
+      gD.graphVertexVec[u].adjacentVec.push_back(v);
+      gD.graphVertexVec[v].adjacentVec.push_back(u);
       in >> u;
     }
     in >> u; //Az utolsó nulla beolvasása miatt
@@ -28,65 +27,53 @@ void throwIfNotPositiveCount(int throwValue)
   if(throwValue <= 0) throw NOT_POSITIVE_COUNT;
 }
 
-std::ostream& operator<<(std::ostream &out,const GraphDiameter &gD)
-{
-  for(auto i = 1u; i < gD.graphVertexVec.size(); i++)
-  {
-    out << i << ".vertex adjacent: ";
-    for(auto j = 0u; j < gD.graphVertexVec[i].vertexAdjacentVec.size(); j++)
-    {
-      out << gD.graphVertexVec[i].vertexAdjacentVec[j] << " "; 
-    }
-    out << std::endl;
-  }
-  return out;
-}
-
 int GraphDiameter::calculateDiameter()
 {
     initStartVertexAndQueue();
-    calculateDistanceWithBfs();
+    calculateDistanceWithBfsAndDecideDiameter();
     reInitVertexesAndQueue();
-    calculateDistanceWithBfs();
+    calculateDistanceWithBfsAndDecideDiameter();
     return graphVertexVec[maxDistanceInd].distance;
 }
 
 void GraphDiameter::initStartVertexAndQueue()
 {
     maxDistanceInd = 1;
-    srand(time(NULL));
-    int startVertex = (rand() % (graphVertexVec.size()));
-    graphVertexVec[startVertex].vertexColor = GRAY;
-    graphQueue.push(checkStartVertex(startVertex));
+    int startVertex = createRandNumber();
+    graphVertexVec[startVertex].color = GRAY;
+    graphQueue.push(startVertex);
 }
 
-int GraphDiameter::checkStartVertex(int startVertex)
+int GraphDiameter::createRandNumber()
 {
-  return startVertex == 0 ? 1 : startVertex;
+    std::random_device rd; 
+    std::mt19937 gen(rd()); 
+    std::uniform_int_distribution<> dis(1, graphVertexVec.size());
+    return dis(gen);
 }
 
-void GraphDiameter::calculateDistanceWithBfs()
+void GraphDiameter::calculateDistanceWithBfsAndDecideDiameter()
 {
   while(!graphQueue.isEmpty())
   {
      const auto actVertex = graphQueue.pop();
-     for(auto i = 0u; i < graphVertexVec[actVertex].vertexAdjacentVec.size(); i++)
+     for(auto i = 0u; i < graphVertexVec[actVertex].adjacentVec.size(); i++)
       {
-        const auto actAdjacent = graphVertexVec[actVertex].vertexAdjacentVec[i];
-        if(graphVertexVec[actAdjacent].vertexColor == WHITE)
+        const auto actAdjacent = graphVertexVec[actVertex].adjacentVec[i];
+        if(graphVertexVec[actAdjacent].color == WHITE)
         {
-          incrementAdjDistanceAndPushToQueue(actVertex, actAdjacent);
+          incrementActAdjDistanceAndPushItToQueue(actVertex, actAdjacent);
           decideMaxDistanceInd(actVertex, actAdjacent);
         }
       }
-      graphVertexVec[actVertex].vertexColor = BLACK;
+      graphVertexVec[actVertex].color = BLACK;
   }
 }
 
-void GraphDiameter::incrementAdjDistanceAndPushToQueue(int actVertex, int actAdjacent)
+void GraphDiameter::incrementActAdjDistanceAndPushItToQueue(int actVertex, int actAdjacent)
 {
     graphVertexVec[actAdjacent].distance = graphVertexVec[actVertex].distance + 1;
-    graphVertexVec[actAdjacent].vertexColor = GRAY;
+    graphVertexVec[actAdjacent].color = GRAY;
     graphQueue.push(actAdjacent);
 }
 
@@ -103,7 +90,7 @@ void GraphDiameter::reInitVertexesAndQueue()
     graphQueue.push(maxDistanceInd);
     for(auto i = 1u; i < graphVertexVec.size();++i) 
     {
-        graphVertexVec[i].vertexColor = WHITE;
+        graphVertexVec[i].color = WHITE;
         graphVertexVec[i].distance = 0;
     }  
 }

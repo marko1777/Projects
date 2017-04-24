@@ -1,0 +1,5 @@
+1.Graph Diameter is: 2
+2.Graph Diameter is: 4
+3.Graph Diameter is: 6
+4.Graph Diameter is: 14
+5.Graph Diameter is: 9
